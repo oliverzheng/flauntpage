@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@lexical/rich-text": "^0.17.1",
     "@types/express": "^4.17.21",
+    "@types/invariant": "^2.2.37",
     "@types/multer": "^1.4.12",
     "express": "^4.19.2",
+    "invariant": "^2.2.4",
+    "lexical": "^0.17.1",
     "multer": "^1.4.5-lts.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
