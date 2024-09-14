@@ -1,5 +1,4 @@
 import invariant from 'invariant';
-import './style.css';
 import {initApp} from './app';
 
 const appElement = document.querySelector('#app')!;
