@@ -24,6 +24,27 @@ body {
   }
 }
 
+#chrome {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  height: 20px;
+  line-height: 1em;
+}
+
+#chrome .save-button,
+#chrome .cancel-edit-button {
+  display: none;
+}
+
+body.edit-enabled #chrome .enable-edit-button {
+  display: none;
+}
+body.edit-enabled #chrome .save-button,
+body.edit-enabled #chrome .cancel-edit-button {
+  display: inline-block;
+}
+
 a {
   color: #000;
   text-decoration: none;

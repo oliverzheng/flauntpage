@@ -15,6 +15,8 @@ const editor = createEditor(config);
 mergeRegister(registerRichText(editor));
 
 export function turnOnEditMode() {
+  document.body.className += ' edit-enabled';
+
   const contentElement = document.getElementById('content');
   invariant(contentElement != null, 'Must have a #content element');
 
@@ -30,6 +32,15 @@ export function turnOnEditMode() {
     $getRoot().select();
     $insertNodes(nodes);
   });
+}
+
+export function turnOffEditMode() {
+  document.body.className = document.body.className.replace('edit-enabled', '');
+
+  const contentElement = document.getElementById('content');
+  invariant(contentElement != null, 'Must have a #content element');
+
+  contentElement.removeAttribute('contentEditable');
 }
 
 export async function getEditorContentHtml(): Promise<string> {

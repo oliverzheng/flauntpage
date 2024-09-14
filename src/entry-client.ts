@@ -1,6 +1,6 @@
 import invariant from 'invariant';
 import {initApp} from './app';
 
-const appElement = document.querySelector('#app')!;
-invariant(appElement, 'Must have #app element');
-initApp(appElement);
+const chromeElement = document.querySelector('#chrome')!;
+invariant(chromeElement, 'Must have #chrome element');
+initApp(chromeElement);

@@ -1,24 +1,33 @@
 import invariant from 'invariant';
-import {getEditorContentHtml, turnOnEditMode} from './editor';
+import {getEditorContentHtml, turnOffEditMode, turnOnEditMode} from './editor';
 import uploadFile from './upload-file';
 
-export function initApp(appElement: Element) {
-  const enableEditButton = appElement.querySelector<HTMLButtonElement>(
+export function initApp(chromeElement: Element) {
+  const enableEditButton = chromeElement.querySelector<HTMLButtonElement>(
     '.enable-edit-button',
   );
   invariant(enableEditButton, 'Missing enable-edit-button');
 
-  const saveButton = document.querySelector<HTMLButtonElement>('.save-button');
+  const cancelEditButton = chromeElement.querySelector<HTMLButtonElement>(
+    '.cancel-edit-button',
+  );
+  invariant(cancelEditButton, 'Missing cancel-edit-button');
+
+  const saveButton =
+    chromeElement.querySelector<HTMLButtonElement>('.save-button');
   invariant(saveButton, 'Missing save button');
-  saveButton.disabled = true;
 
   enableEditButton.addEventListener('click', async () => {
     turnOnEditMode();
-    saveButton.disabled = false;
   });
 
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
     await uploadFile('index.html', newContent);
+    turnOffEditMode();
+  });
+
+  cancelEditButton.addEventListener('click', async () => {
+    turnOffEditMode();
   });
 }
