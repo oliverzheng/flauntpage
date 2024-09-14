@@ -40,6 +40,9 @@ body {
 body.edit-enabled #chrome .enable-edit-button {
   display: none;
 }
+body.edit-enabled #chrome .add-page-button {
+  display: none;
+}
 body.edit-enabled #chrome .save-button,
 body.edit-enabled #chrome .cancel-edit-button {
   display: inline-block;
