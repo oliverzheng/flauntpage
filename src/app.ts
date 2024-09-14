@@ -3,17 +3,16 @@ import {getEditorContentHtml, turnOnEditMode} from './editor';
 import uploadFile from './upload-file';
 
 export function initApp(appElement: Element) {
-  const saveButton = document.querySelector<HTMLButtonElement>('#save-button')!;
+  const enableEditButton = appElement.querySelector<HTMLButtonElement>(
+    '.enable-edit-button',
+  );
+  invariant(enableEditButton, 'Missing enable-edit-button');
 
-  appElement.innerHTML = `
-<button id="app--turn-on-edit">
-  Turn on edit
-</button>
-`;
+  const saveButton = document.querySelector<HTMLButtonElement>('.save-button');
+  invariant(saveButton, 'Missing save button');
+  saveButton.disabled = true;
 
-  const turnOnEditButton = document.querySelector('#app--turn-on-edit')!;
-  invariant(turnOnEditButton, 'Must have #app--turn-on-edit element');
-  turnOnEditButton.addEventListener('click', async () => {
+  enableEditButton.addEventListener('click', async () => {
     turnOnEditMode();
     saveButton.disabled = false;
   });
