@@ -28,7 +28,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     return res.status(400).send('No file uploaded.');
   }
 
-  const targetPath = path.join(STORED_FILES_DIR, req.file.originalname);
+  const {filepath} = req.body;
+  if (!filepath || typeof filepath !== 'string') {
+    console.log(filepath);
+    return res.status(400).send('No filepath specified.');
+  }
+
+  const targetPath = path.resolve(path.join(STORED_FILES_DIR, '/', filepath));
+  if (!targetPath.startsWith(path.resolve(STORED_FILES_DIR) + '/')) {
+    console.log(targetPath, path.resolve(STORED_FILES_DIR) + '/');
+    return res.status(400).send('Invalid filepath.');
+  }
+
+  await fs.mkdir(path.dirname(targetPath), {recursive: true});
   await fs.rename(req.file.path, targetPath);
 
   return res.send('Uploaded');

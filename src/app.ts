@@ -31,7 +31,7 @@ export function initApp(chromeElement: Element) {
 
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
-    await uploadFile('index.html', newContent);
+    await uploadFile(window.location.pathname, newContent);
     turnOffEditMode();
   });
 
