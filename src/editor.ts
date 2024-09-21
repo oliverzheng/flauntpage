@@ -21,8 +21,19 @@ const config = {
 };
 
 const editor = createEditor(config);
+let htmlBeforeEdit: string;
 
 mergeRegister(registerRichText(editor));
+
+function setEditorToHtml(html: string) {
+  const parser = new DOMParser();
+  const dom = parser.parseFromString(html, 'text/html');
+  const nodes = $generateNodesFromDOM(editor, dom);
+  const root = $getRoot();
+  root.clear(); // In case we try to turn on edit multiple times
+  root.select();
+  $insertNodes(nodes);
+}
 
 export function turnOnEditMode() {
   document.body.className += ' edit-enabled';
@@ -30,17 +41,13 @@ export function turnOnEditMode() {
   const contentElement = document.getElementById('content');
   invariant(contentElement != null, 'Must have a #content element');
 
-  const initialHtml = contentElement.innerHTML;
+  htmlBeforeEdit = contentElement.innerHTML;
 
   contentElement.contentEditable = 'true';
   editor.setRootElement(contentElement);
 
   editor.update(() => {
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(initialHtml, 'text/html');
-    const nodes = $generateNodesFromDOM(editor, dom);
-    $getRoot().select();
-    $insertNodes(nodes);
+    setEditorToHtml(htmlBeforeEdit);
   });
 
   editor.registerCommand(
@@ -78,9 +85,12 @@ export function turnOnEditMode() {
 export function turnOffEditMode() {
   document.body.className = document.body.className.replace('edit-enabled', '');
 
+  editor.update(() => {
+    setEditorToHtml(htmlBeforeEdit);
+  });
+
   const contentElement = document.getElementById('content');
   invariant(contentElement != null, 'Must have a #content element');
-
   contentElement.removeAttribute('contentEditable');
 }
 
