@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev-server": "npx tsx dev-server/server.ts",
+    "render-index": "./scripts/render-index.sh",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run render-index && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
