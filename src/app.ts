@@ -2,7 +2,7 @@ import invariant from 'invariant';
 import {getEditorContentHtml, turnOffEditMode, turnOnEditMode} from './editor';
 import uploadFile from './upload-file';
 
-export function initApp(chromeElement: Element) {
+export function initApp(chromeElement: Element, entryScriptPath: string) {
   const enableEditButton = chromeElement.querySelector<HTMLButtonElement>(
     '.enable-edit-button',
   );
@@ -26,12 +26,12 @@ export function initApp(chromeElement: Element) {
   });
 
   addPageButton.addEventListener('click', async () => {
-    await onAddPageClick();
+    await onAddPageClick(entryScriptPath);
   });
 
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
-    await uploadFile(window.location.pathname, newContent);
+    await uploadFile(window.location.pathname, newContent, entryScriptPath);
     turnOffEditMode();
   });
 
@@ -40,7 +40,7 @@ export function initApp(chromeElement: Element) {
   });
 }
 
-async function onAddPageClick() {
+async function onAddPageClick(entryScriptPath: string) {
   let url = prompt('What url should the page have?', '/somepage.html');
 
   while (true) {
@@ -55,7 +55,11 @@ async function onAddPageClick() {
     }
   }
 
-  await uploadFile(url, '<p>Here is your new page. Make it good.</p>');
+  await uploadFile(
+    url,
+    '<p>Here is your new page. Make it good.</p>',
+    entryScriptPath,
+  );
 
   window.location.href = url;
 }

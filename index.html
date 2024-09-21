@@ -2,19 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <link href="/style.css" rel="stylesheet" />
+    <title>Slow Web Page</title>
     <!--app-head-->
+    <script type="module" src="/src/entry-client.ts"></script>
   </head>
   <body>
-    <div id="app"><!--app-html--></div>
+    <div id="chrome">
+      <button class="enable-edit-button">Edit</button>
+      <button class="add-page-button">Add page</button>
+      <button class="save-button">Save</button>
+      <button class="cancel-edit-button">Cancel</button>
+    </div>
     <div id="content">
       <p dir="ltr">
         <span style="white-space: pre-wrap">This is test text.</span>
       </p>
     </div>
-    <script type="module" src="/src/entry-client.ts"></script>
-    <button id="save-button" disabled>Save</button>
   </body>
 </html>
