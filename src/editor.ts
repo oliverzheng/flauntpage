@@ -82,15 +82,20 @@ export function turnOnEditMode() {
   );
 }
 
-export function turnOffEditMode() {
+export function turnOffEditMode(htmlSaved: boolean) {
   document.body.className = document.body.className.replace('edit-enabled', '');
-
-  editor.update(() => {
-    setEditorToHtml(htmlBeforeEdit);
-  });
 
   const contentElement = document.getElementById('content');
   invariant(contentElement != null, 'Must have a #content element');
+
+  if (htmlSaved) {
+    htmlBeforeEdit = contentElement.innerHTML;
+  } else {
+    editor.update(() => {
+      setEditorToHtml(htmlBeforeEdit);
+    });
+  }
+
   contentElement.removeAttribute('contentEditable');
 }
 

@@ -32,11 +32,11 @@ export function initApp(chromeElement: Element, entryScriptPath: string) {
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
     await uploadFile(window.location.pathname, newContent, entryScriptPath);
-    turnOffEditMode();
+    turnOffEditMode(true);
   });
 
   cancelEditButton.addEventListener('click', async () => {
-    turnOffEditMode();
+    turnOffEditMode(false);
   });
 }
 
