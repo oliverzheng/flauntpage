@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev-server": "npx tsx dev-server/server.ts",
-    "render-index": "./scripts/render-index.sh",
+    "dev-server": "npm run render-index-dev && npx tsx dev-server/server.ts",
+    "render-index-dev": "./scripts/render-index-dev.sh",
+    "render-index-prod": "./scripts/render-index-prod.sh",
     "dev": "vite",
-    "build": "npm run render-index && vite build",
+    "build": "npm run render-index-prod && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
