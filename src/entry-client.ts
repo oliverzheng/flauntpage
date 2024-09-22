@@ -1,8 +1,15 @@
-import invariant from 'invariant';
-import {initApp} from './app';
+import {LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY} from './constants';
 
 const entryScriptPath = new URL(import.meta.url).pathname;
 
-const chromeElement = document.querySelector('#chrome')!;
-invariant(chromeElement, 'Must have #chrome element');
-initApp(chromeElement, entryScriptPath);
+async function bootstrap() {
+  if (
+    process.env.NODE_ENV === 'development' ||
+    localStorage.getItem(LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY)
+  ) {
+    const {initApp} = await import('./app');
+    initApp(entryScriptPath);
+  }
+}
+
+bootstrap();

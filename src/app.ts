@@ -1,8 +1,29 @@
 import invariant from 'invariant';
 import {getEditorContentHtml, turnOffEditMode, turnOnEditMode} from './editor';
-import uploadFile from './upload-file';
+import {IServer} from './i-server';
+import GitHubServer from './github-server';
 
-export function initApp(chromeElement: Element, entryScriptPath: string) {
+export async function initApp(
+  // This is like this so that dev server can be passed in, but there is one
+  // entry point to initializing the app (here) so there is only 1
+  // productionized JS bundle.
+  entryScriptPath: string,
+) {
+  let server;
+  if (process.env.NODE_ENV === 'development') {
+    // Import it inline so production build doesn't have it
+    const {default: DevServer} = await import('./dev-server');
+    server = new DevServer(entryScriptPath);
+  }
+  if (!server) {
+    server = GitHubServer.setup(entryScriptPath);
+    invariant(server, 'Invalid Github config');
+  }
+
+  const chromeElement = document.querySelector<HTMLElement>('#chrome')!;
+  invariant(chromeElement, 'Must have #chrome element');
+  chromeElement.style.display = 'block';
+
   const enableEditButton = chromeElement.querySelector<HTMLButtonElement>(
     '.enable-edit-button',
   );
@@ -26,12 +47,15 @@ export function initApp(chromeElement: Element, entryScriptPath: string) {
   });
 
   addPageButton.addEventListener('click', async () => {
-    await onAddPageClick(entryScriptPath);
+    await onAddPageClick(server);
   });
 
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
-    await uploadFile(window.location.pathname, newContent, entryScriptPath);
+    await server.uploadFile({
+      filepath: window.location.pathname,
+      contentHtml: newContent,
+    });
     turnOffEditMode(true);
   });
 
@@ -40,7 +64,7 @@ export function initApp(chromeElement: Element, entryScriptPath: string) {
   });
 }
 
-async function onAddPageClick(entryScriptPath: string) {
+async function onAddPageClick(server: IServer) {
   let url = prompt('What url should the page have?', '/somepage.html');
 
   while (true) {
@@ -55,11 +79,10 @@ async function onAddPageClick(entryScriptPath: string) {
     }
   }
 
-  await uploadFile(
-    url,
-    '<p>Here is your new page. Make it good.</p>',
-    entryScriptPath,
-  );
+  await server.uploadFile({
+    filepath: url,
+    contentHtml: '<p>Here is your new page. Make it good.</p>',
+  });
 
   window.location.href = url;
 }
