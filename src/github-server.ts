@@ -1,7 +1,6 @@
 import {Octokit} from '@octokit/rest';
 import renderTemplate from './render-template';
 import {IServer} from './i-server';
-import {LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY} from './constants';
 
 export default class GitHubServer implements IServer {
   private octokit: Octokit;
@@ -15,37 +14,37 @@ export default class GitHubServer implements IServer {
     owner,
     repo,
     branch,
-    authToken,
+    octokit,
   }: {
     entryScriptPath: string;
     owner: string;
     repo: string;
     branch: string;
-    authToken: string;
+    octokit: Octokit;
   }) {
     this.entryScriptPath = entryScriptPath;
     this.owner = owner;
     this.repo = repo;
     this.branch = branch;
-    this.octokit = new Octokit({
-      auth: authToken,
-    });
+    this.octokit = octokit;
   }
 
-  static setup(entryScriptPath: string): GitHubServer | undefined {
-    const authToken = localStorage.getItem(LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY);
+  static setup(
+    octokit: Octokit,
+    entryScriptPath: string,
+  ): GitHubServer | undefined {
     const owner = localStorage.getItem('GITHUB_OWNER');
     const repo = localStorage.getItem('GITHUB_REPO');
     const branch = localStorage.getItem('GITHUB_BRANCH');
 
-    if (!authToken || !owner || !repo || !branch) {
+    if (!owner || !repo || !branch) {
       return;
     }
 
-    return new GitHubServer({entryScriptPath, owner, repo, branch, authToken});
+    return new GitHubServer({entryScriptPath, owner, repo, branch, octokit});
   }
 
-  async uploadFile({
+  async uploadHtmlPage({
     filepath,
     contentHtml,
   }: {
@@ -53,6 +52,14 @@ export default class GitHubServer implements IServer {
     contentHtml: string;
   }) {
     const html = renderTemplate(contentHtml, this.entryScriptPath);
+
+    await this.uploadFiles([{filepath, data: html}]);
+  }
+
+  async uploadFiles(files: {filepath: string; data: string}[]) {
+    if (files.length === 0) {
+      return;
+    }
 
     // Get the SHA of the latest commit on the branch
     const {data: refData} = await this.octokit.git.getRef({
@@ -75,14 +82,12 @@ export default class GitHubServer implements IServer {
     const {data: treeData} = await this.octokit.git.createTree({
       owner: this.owner,
       repo: this.repo,
-      tree: [
-        {
-          path: filepath.slice(1),
-          mode: '100644',
-          type: 'blob',
-          content: html,
-        },
-      ],
+      tree: files.map(file => ({
+        path: file.filepath.slice(1),
+        mode: '100644',
+        type: 'blob',
+        content: file.data,
+      })),
       base_tree: commitData.tree.sha,
     });
 
@@ -90,7 +95,7 @@ export default class GitHubServer implements IServer {
     const {data: newCommitData} = await this.octokit.git.createCommit({
       owner: this.owner,
       repo: this.repo,
-      message: `Upsert ${filepath}`,
+      message: `Upsert ${files.map(({filepath}) => filepath).join(', ')}`,
       tree: treeData.sha,
       parents: [latestCommitSha],
     });

@@ -2,6 +2,9 @@ import invariant from 'invariant';
 import {getEditorContentHtml, turnOffEditMode, turnOnEditMode} from './editor';
 import {IServer} from './i-server';
 import GitHubServer from './github-server';
+import {LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY} from './constants';
+import {Octokit} from '@octokit/rest';
+import AutoUpdater from './auto-updater';
 
 export async function initApp(
   // This is like this so that dev server can be passed in, but there is one
@@ -9,14 +12,21 @@ export async function initApp(
   // productionized JS bundle.
   entryScriptPath: string,
 ) {
-  let server;
+  const githubAuthToken = localStorage.getItem(
+    LOCAL_STORAGE_GITHUB_AUTH_TOKEN_KEY,
+  );
+  const octokit = githubAuthToken ? new Octokit({auth: githubAuthToken}) : null;
+  const autoUpdater = octokit ? new AutoUpdater({octokit}) : null;
+
+  let server: IServer | undefined;
   if (process.env.NODE_ENV === 'development') {
     // Import it inline so production build doesn't have it
     const {default: DevServer} = await import('./dev-server');
     server = new DevServer(entryScriptPath);
   }
   if (!server) {
-    server = GitHubServer.setup(entryScriptPath);
+    invariant(octokit, 'Must have a github auth token by now');
+    server = GitHubServer.setup(octokit, entryScriptPath);
     invariant(server, 'Invalid Github config');
   }
 
@@ -38,6 +48,9 @@ export async function initApp(
   );
   invariant(cancelEditButton, 'Missing cancel-edit-button');
 
+  const updateButton =
+    chromeElement.querySelector<HTMLButtonElement>('.update-button');
+
   const saveButton =
     chromeElement.querySelector<HTMLButtonElement>('.save-button');
   invariant(saveButton, 'Missing save button');
@@ -52,7 +65,7 @@ export async function initApp(
 
   saveButton.addEventListener('click', async () => {
     const newContent = await getEditorContentHtml();
-    await server.uploadFile({
+    await server.uploadHtmlPage({
       filepath: window.location.pathname,
       contentHtml: newContent,
     });
@@ -62,6 +75,18 @@ export async function initApp(
   cancelEditButton.addEventListener('click', async () => {
     turnOffEditMode(false);
   });
+
+  // Maybe some old pages don't have this button
+  if (updateButton) {
+    if (!autoUpdater) {
+      updateButton.disabled = true;
+    } else {
+      updateButton.addEventListener('click', async () => {
+        const newAssets = await autoUpdater.fetchAssets();
+        await server.uploadFiles(newAssets);
+      });
+    }
+  }
 }
 
 async function onAddPageClick(server: IServer) {
@@ -79,7 +104,7 @@ async function onAddPageClick(server: IServer) {
     }
   }
 
-  await server.uploadFile({
+  await server.uploadHtmlPage({
     filepath: url,
     contentHtml: '<p>Here is your new page. Make it good.</p>',
   });

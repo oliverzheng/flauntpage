@@ -1,3 +1,8 @@
 export interface IServer {
-  uploadFile(options: {filepath: string; contentHtml: string}): Promise<void>;
+  uploadFiles(files: {filepath: string; data: string}[]): Promise<void>;
+
+  uploadHtmlPage(options: {
+    filepath: string;
+    contentHtml: string;
+  }): Promise<void>;
 }
