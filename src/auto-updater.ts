@@ -2,7 +2,7 @@ import {Octokit} from '@octokit/rest';
 
 // Github source for new asset files
 const OWNER = 'oliverzheng';
-const REPO = 'slowweb';
+const REPO = 'flauntpage';
 const DIST_DIR = 'dist/assets';
 
 // What's written to the local files
