@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev-server": "npm run render-index-dev && npx tsx dev-server/server.ts",
-    "render-index-dev": "./scripts/render-index-dev.sh",
-    "render-index-prod": "./scripts/render-index-prod.sh",
+    "render-index-dev": "tsx ./scripts/render-index.ts --env=development",
+    "render-index-prod": "tsx ./scripts/render-index.ts --env=production",
     "dev": "vite",
     "build": "npm run render-index-prod && vite build",
     "preview": "vite preview"
@@ -18,10 +18,12 @@
     "@types/express": "^4.17.21",
     "@types/invariant": "^2.2.37",
     "@types/multer": "^1.4.12",
+    "@types/mustache": "^4.2.5",
     "express": "^4.19.2",
     "invariant": "^2.2.4",
     "lexical": "^0.17.1",
     "multer": "^1.4.5-lts.1",
+    "mustache": "^4.2.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
     "typescript": "^5.5.3",

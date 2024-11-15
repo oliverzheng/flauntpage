@@ -8,6 +8,7 @@ export default class GitHubServer implements IServer {
   private owner: string;
   private repo: string;
   private branch: string;
+  private templates: {[templateName: string]: string} | undefined;
 
   constructor({
     entryScriptPath,
@@ -51,7 +52,11 @@ export default class GitHubServer implements IServer {
     filepath: string;
     contentHtml: string;
   }) {
-    const html = renderTemplate(contentHtml, this.entryScriptPath);
+    const html = renderTemplate({
+      server: this,
+      contentHtml,
+      entryScriptPath: this.entryScriptPath,
+    });
 
     await this.uploadFiles([{filepath, data: html}]);
   }
@@ -107,5 +112,54 @@ export default class GitHubServer implements IServer {
       ref: `heads/${this.branch}`,
       sha: newCommitData.sha,
     });
+  }
+
+  async listFiles(directory: string): Promise<string[]> {
+    const {data} = await this.octokit.repos.getContent({
+      owner: this.owner,
+      repo: this.repo,
+      path: directory.slice(1), // Remove leading slash
+    });
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data
+      .filter(item => item.type === 'file')
+      .map(item => `/${item.path}`);
+  }
+
+  async getFile(filepath: string): Promise<string> {
+    const {data} = await this.octokit.repos.getContent({
+      owner: this.owner,
+      repo: this.repo,
+      path: filepath.slice(1), // Remove leading slash
+      mediaType: {
+        format: 'raw',
+      },
+    });
+
+    if (typeof data !== 'string') {
+      throw new Error('Unexpected response format');
+    }
+
+    return data;
+  }
+
+  async initForEdit(): Promise<void> {
+    const templatePaths = await this.listFiles('/templates');
+    const templates: {[templateName: string]: string} = {};
+    for (const path of templatePaths) {
+      templates[path] = await this.getFile(path);
+    }
+    this.templates = templates;
+  }
+
+  getTemplates(): {[templateName: string]: string} {
+    if (!this.templates) {
+      throw new Error('Templates not initialized');
+    }
+    return this.templates;
   }
 }

@@ -30,6 +30,8 @@ export async function initApp(
     invariant(server, 'Invalid Github config');
   }
 
+  await server.initForEdit();
+
   const chromeElement = document.querySelector<HTMLElement>('#chrome')!;
   invariant(chromeElement, 'Must have #chrome element');
   chromeElement.style.display = 'block';
