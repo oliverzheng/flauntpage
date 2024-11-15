@@ -1,6 +1,7 @@
 import invariant from 'invariant';
 import {IServer} from './i-server';
 import mustache from 'mustache';
+import pretty from 'pretty';
 
 const chromeTemplate = `
 <div id="chrome" style="display: none">
@@ -29,7 +30,7 @@ export default function renderTemplate({
 
   const headTemplate = `<script type="module" crossorigin src="${entryScriptPath}"></script>`;
 
-  return mustache.render(
+  const renderedHtml = mustache.render(
     template,
     {
       TEMPLATES_DIR_PATH: '/templates',
@@ -40,4 +41,6 @@ export default function renderTemplate({
       content: `<div id="content">${contentHtml}</div>`,
     },
   );
+
+  return pretty(renderedHtml, {ocd: true});
 }
